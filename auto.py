@@ -6,10 +6,16 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait # available since 2.4.0
 from selenium.webdriver.support import expected_conditions as EC # available since 2.26.0
 from selenium.common.exceptions import TimeoutException
+import pymongo
 import time
 import csv
-index =1
+from pymongo import MongoClient
+client = MongoClient('localhost', 27017)
+db = client.blogs
+selected_list=[]
 def wplogin(driver):
+        link_list =[]
+# # **********************************************************Medium************************************************************************
         driver.get("https://medium.com/")
         time.sleep(3)
         driver.find_element_by_link_text('Sign in').click() 
@@ -21,45 +27,65 @@ def wplogin(driver):
         time.sleep(3)
         driver.find_element_by_xpath('//*[@id="password"]/div[1]/div/div[1]/input').send_keys("9891299859")
         driver.find_element_by_id('passwordNext').click()
+        time.sleep(10)
+        links =driver.find_elements_by_css_selector('.ui-h2.ui-xs-h4.ui-clamp3')
+        alink = driver.find_elements_by_css_selector('.ds-link.ds-link--stylePointer.u-overflowHidden.u-flex0.u-width100pct')
+        print("Medium")
+        index =0
+        for x in links:
+                link_list.append({'title':x.text,'link':alink[index].get_attribute('href')})
+                index +=1
+# # **********************************************************FreeCodeCamp************************************************************************
+        driver.get("https://www.freecodecamp.org/news/")
         time.sleep(3)
-        address =driver.find_elements_by_css_selector('.streamItem.streamItem--extremeAdaptiveSection.js-streamItem')
-        print(address)
-        # voting =driver.find_elements_by_css_selector('.ta-right.floating.search_result_rating.col-s-4.clearfix')
-        # cusines = driver.find_elements_by_css_selector('.col-s-11.col-m-12.nowrap.pl0')
-        # costfortwo =driver.find_elements_by_css_selector('.res-cost.clearfix')
-        # i=0
-        # for  x in name:
-        #     try:
-              
-        #         rating_1 =voting[i].text
-        #         rating_2 = rating_1.replace('\n', ' ').replace('\r', '') 
-        #         rating_3 = rating_2.split(' ')
-        #         print(rating_2)
-        #         row =[]
-        #         rs = (costfortwo[i].text)
-        #         mystring = rs.replace('\n', '').replace('\r', '')
-        #         stri = mystring.split(':')[-1]
-        #         last = stri[1:]
-        #         index +=1
-        #         row.append("{} name: {}, address: {}, rating: {}, cost for two: {}, CUISINES: {} ".format(index,x.text,address[i].text,rating_2,last,cusines[i].text))
-        #         with open('scrap.csv', 'a') as csvFile:
-        #                 writer = csv.writer(csvFile)
-        #                 writer.writerow(row)    
-        #         print(row)
-        #         csvFile.close()
-        #         i +=1
-        #     except Exception:
-        #              pass
+        links_1 =driver.find_elements_by_css_selector('.post-card-title')
+        alink_1 = driver.find_elements_by_xpath('//*[@class="post-card-title"]/a')
+        index=0
+        print("freecodecamp")
+        for x in links_1:
+                 link_list.append({'title':x.text,'link':alink_1[index].get_attribute('href')})
+                 index +=1
+#  **********************************************************Dev.TO************************************************************************
+        driver.get("https://dev.to/")
+        time.sleep(3)
+        links_2 =driver.find_elements_by_css_selector('.content')
+        alinks_2 =driver.find_elements_by_css_selector('.index-article-link')
+        index=0
+        time.sleep(3)
+        print("dev.to")
+        for x in links_2:
+                link_list.append({'title':x.text,'link':alinks_2[index].get_attribute('href')})
+                index +=1
+# **********************************************************HeckerNoon************************************************************************
+        driver.get("https://community.hackernoon.com/c/Software-Development")
+        time.sleep(3)
+        links_3 =driver.find_elements_by_css_selector('.title.raw-link.raw-topic-link')
+        print("hackernoon")
+        index=0
+        for x in links_3:
+                 link_list.append({'title':x.text,'link':links_3[index].get_attribute('href')})
+                 index +=1
 
+        # print("Data::",link_list)
+        keys =['javascript','angular','angularjs','reactjs','nodejs','node.js']
+        for k in keys:
+                for x in link_list:
+                        if k in x['title'].casefold():
+                                selected_list.append(x)
+        print(selected_list)
 
+      
 
 
 
 chrome_options = Options()
 chrome_options.add_argument("--start-maximized")
-# chrome_options.add_argument("--headless")
+chrome_options.add_argument("--headless")
 # driver = webdriver.Chrome(chrome_options=chrome_options)
-driver = webdriver.Chrome('/home/virus/project/python/scrap/chromedriver',chrome_options=chrome_options)
+driver = webdriver.Chrome('/home/decision/python/python/Medium/scrap/chromedriver',chrome_options=chrome_options)
 action = ActionChains(driver) 
 wplogin(driver)   
-# driver.close()
+driver.close()
+posts = db.links
+for x in selected_list:
+        post_id = posts.insert_one(x).inserted_id        
