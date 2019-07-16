@@ -10,7 +10,7 @@ import pymongo
 import time
 import csv
 from pymongo import MongoClient
-client = MongoClient('localhost', 27017)
+client = MongoClient('mongodb://vaibhav:vaibhav123@ds251507.mlab.com:51507/blogs')
 db = client.blogs
 selected_list=[]
 def wplogin(driver):
